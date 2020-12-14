@@ -1,7 +1,7 @@
 {
-    "name": "Getting Started Example",
+    "name": "PrettyEAR",
     "version": "1.0",
-    "description": "Build an Extension!",
+    "description": "Read the EAR CCL in a fancy way.",
     "permissions": [
         "activeTab",
         "declarativeContent",
