@@ -1,0 +1,5 @@
+$('#L_2021206EN\\.01002501 .oj-ti-grseq-1').each(function(index) {
+    console.log(index, $(this).text().replaceAll('\n',''));
+});
+
+//document.querySelector("#L_2021206EN\\.01002501")
