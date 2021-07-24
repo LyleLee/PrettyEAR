@@ -38,7 +38,7 @@ function ParaseTable(t) {
 
         $(this).children('td').each(function(tdindex) {
             //console.log($(this).children(":first").html());
-            trString = trString + $(this).children(":first").text().replace(/(\r\n|\n|\r)/gm, "").trim();
+            trString = trString + ' ' + $(this).children(":first").text().replace(/(\r\n|\n|\r)/gm, "").trim();
         });
 
         for (var i = 0; i < deep; i++) {
@@ -46,6 +46,13 @@ function ParaseTable(t) {
         }
 
         console.log(trString);
+
+        $(this).children('td').each(function(tdindex) {
+
+            $(this).children('table').each(function(index) {
+                ParaseTable($(this));
+            });
+        });
     });
 
     deep--;

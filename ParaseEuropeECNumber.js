@@ -38,6 +38,9 @@ function ParaseTable(t) {
 
         $(this).children('td').each(function(tdindex) {
             //console.log($(this).children(":first").html());
+            if (trString != "") {
+                trString = trString + ' '
+            }
             trString = trString + $(this).children(":first").text().replace(/(\r\n|\n|\r)/gm, "").trim();
         });
 
@@ -59,4 +62,12 @@ function ParaseTable(t) {
 
 }
 
-ParaseTable($('body > table'));
+$('#L_2021206EN\\.01002501 > div > table').each(function(index) {
+
+    var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
+
+    if (eccn != null) {
+        ParaseTable($(this));
+    }
+
+});
