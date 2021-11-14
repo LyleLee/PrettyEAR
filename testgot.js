@@ -1,6 +1,6 @@
 const got = require('got');
 const cheerio = require('cheerio');
-
+const fs = require('fs');
 
 (async () => {
 	try {
@@ -14,7 +14,7 @@ const cheerio = require('cheerio');
         var deep = 0;
 
 
-function ParaseTable(t) {
+function ParaseTable(t, eccn) {
 
     deep++;
 
@@ -30,16 +30,24 @@ function ParaseTable(t) {
             trString = trString + $(this).children().first().text().replace(/(\r\n|\n|\r)/gm, "").trim();
         });
 
-        for (var i = 0; i < deep; i++) {
+        for (var i = 1; i < deep; i++) {
             trString = '  ' + trString;
         }
+        
+        
+        fs.writeFile(eccn+'.txt', trString+'\n', {flag:'a'}, (err) => {
+            if (err) {
+                console.log('write error when precessing::', eccn)
+                throw err;
+            }
+        });
 
-        console.log(trString);
+        //console.log(trString);
 
         $(this).children('td').each(function(tdindex) {
 
             $(this).children('table').each(function(index) {
-                ParaseTable($(this));
+                ParaseTable($(this), eccn);
             });
         });
     });
@@ -51,10 +59,9 @@ function ParaseTable(t) {
         $('#L_2021206EN\\.01002501 > div > table').each(function(index) {
 
             var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
-
-             if (eccn != null) {
-                console.log("********************\n");
-                ParaseTable($(this));
+            if (eccn != null) {
+                fs.unlinkSync(eccn[1]+'.txt');
+                ParaseTable($(this),eccn[1]);
             }
 
         });
