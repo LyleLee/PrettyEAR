@@ -60,7 +60,12 @@ function ParaseTable(t, eccn) {
 
             var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
             if (eccn != null) {
-                fs.unlinkSync(eccn[1]+'.txt');
+                fs.exists(eccn[1]+'.txt', function(exists) {
+                    if(exists){
+                        fs.unlinkSync(eccn[1]+'.txt');
+                    }
+                });
+                //fs.unlinkSync(eccn[1]+'.txt');
                 ParaseTable($(this),eccn[1]);
             }
 
