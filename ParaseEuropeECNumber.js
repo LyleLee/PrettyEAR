@@ -22,11 +22,6 @@ console.clear();
 
 var deep = 0;
 
-function SpaceByNumber(n) {
-    for (var i = 0; i < deep; i++) {
-        trString = ' ' + trString;
-    }
-}
 
 function ParaseTable(t) {
 
