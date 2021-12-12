@@ -4,11 +4,15 @@ const fs = require('fs');
 
 (async () => {
     try {
+        console.log('fetch url');
         const response = await got('https://eur-lex.europa.eu/eli/reg/2021/821');
         //console.log(response.body);
         //=> '<!doctype html> ...'
+        console.log(response.statusCode);
 
         const $ = cheerio.load(response.body);
+
+        console.log('html loaded');
 
 
         var deep = 0;
@@ -75,7 +79,7 @@ const fs = require('fs');
 
 
     } catch (error) {
-        console.log(error.response.body);
+        console.log(error);
         //=> 'Internal server error ...'
     }
 })();
