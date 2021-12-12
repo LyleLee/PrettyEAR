@@ -23,20 +23,27 @@ console.clear();
 var deep = 0;
 
 
-function ParaseTable(t) {
+function ParaseTable(t, levelEccn) {
 
     deep++;
 
     $(t).find('tbody').first().find('tr').first().each(function (rindex) {
 
         var trString = "";
+        var nextTable = [];
 
         $(this).children('td').each(function(tdindex) {
-            //console.log($(this).children(":first").html());
             if (trString != "") {
                 trString = trString + ' '
             }
-            trString = trString + $(this).children().first().text().replace(/(\r\n|\n|\r)/gm, "").trim();
+            $(this).children().each(function(pindex){
+                if($(this).is('table') == true){
+                    nextTable.push($(this));
+                }
+                else{
+                    trString = trString + $(this).text().replace(/(\r\n|\n|\r)/gm, "").trim();
+                }
+            });
         });
 
         for (var i = 0; i < deep; i++) {
@@ -45,12 +52,7 @@ function ParaseTable(t) {
 
         console.log(trString);
 
-        $(this).children('td').each(function(tdindex) {
-
-            $(this).children('table').each(function(index) {
-                ParaseTable($(this));
-            });
-        });
+        nextTable.forEach((element) => { ParaseTable(element, levelEccn);} )
     });
 
     deep--;
@@ -62,7 +64,7 @@ $('#L_2021206EN\\.01002501 > div > table').each(function(index) {
     var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
 
     if (eccn != null) {
-        ParaseTable($(this));
+        ParaseTable($(this),'');
     }
 
 });
