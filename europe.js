@@ -1,6 +1,12 @@
 const got = require('got');
 const cheerio = require('cheerio');
 const fs = require('fs');
+const tools = require('./tools.js')
+
+
+console.log('clean old file');
+
+tools.removeOldFile('.');
 
 (async () => {
     try {
@@ -64,11 +70,6 @@ const fs = require('fs');
 
             var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
             if (eccn != null) {
-                fs.exists(eccn[1] + '.txt', function (exists) {
-                    if (exists) {
-                        fs.unlinkSync(eccn[1] + '.txt');
-                    }
-                });
                 //fs.unlinkSync(eccn[1]+'.txt');
                 ParaseTable($(this), eccn[1]);
             }
