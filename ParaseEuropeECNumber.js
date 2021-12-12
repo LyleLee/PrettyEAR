@@ -27,7 +27,7 @@ function ParaseTable(t) {
 
     deep++;
 
-    $(t).find('tbody:first > tr').each(function(rindex) {
+    $(t).find('tbody').first().find('tr').first().each(function (rindex) {
 
         var trString = "";
 
@@ -36,7 +36,7 @@ function ParaseTable(t) {
             if (trString != "") {
                 trString = trString + ' '
             }
-            trString = trString + $(this).children(":first").text().replace(/(\r\n|\n|\r)/gm, "").trim();
+            trString = trString + $(this).children().first().text().replace(/(\r\n|\n|\r)/gm, "").trim();
         });
 
         for (var i = 0; i < deep; i++) {
