@@ -52,7 +52,7 @@ function ParaseTable(t, tableECCN) {
                             tableECCN.push(testResult[0]); // a. b. c.
                         }
                     }
-                    if (/^Technical Note:/.exec(thistdText)) { // deal with line of content text
+                    if (/^Technical Notes:/.exec(thistdText)) { // deal with line of content text
                         trString = trString + '\n' + thistdText;
                     } else {
                         trString = trString + thistdText;
