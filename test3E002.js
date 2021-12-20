@@ -25,9 +25,65 @@ console.clear();
 let deep = 0;
 let dataMap = [];
 
+function GetAllDeepECCN(tableECCN) {
+    let allECCN = "";
+    tableECCN.each(function (index) {
+        allECCN += $(this);
+    });
+    return allECCN;
+}
+
+function ReplaceAndTrim(node) {
+    return $(node).text().replace(/(\r\n|\n|\r)/gm, "").trim();
+}
+
 function ParaseTable(t, tableECCN) {
     deep++;
-    $(t).find('tbody').first().find('tr').first().each(function (rindex) {// every table has only one tr
+
+    let tableData = [];
+    let currentECCN = GetAllDeepECCN(tableECCN);
+    let currentText = "";
+    let tr = $(t).find('tbody').first().find('tr').first(); //every table has only 1 tr
+    let tds = $(tr).children('td'); // 2 or 3 td
+    let td = null; // table, text, p
+
+    if (tds.length == 3) {
+        currentECCN = currentECCN + ReplaceAndTrim(tds[1]);
+        td = tds[2];
+    }
+    else {
+        currentECCN = currentECCN + treat_td(tds[0]);
+        td = tds[1];
+    }
+    let tdchilds = $(td).children();
+
+    if (tdchilds.length == 1) // only text
+    {
+        currentText = ReplaceAndTrim(td);
+        tableData.append([currentECCN, currentText]);
+    }
+    else if(tdchilds.length > 1){
+        // while not table
+        currentText = ReplaceAndTrim(tdchilds[0].text());
+        tableData.append([currentECCN,currentText]);
+
+        let complex = '';
+        for (let i = 1; i < tdchilds.length; ++i) {
+            complex = ReplaceAndTrim(tdchilds[i]);
+            if(tdchilds[i].is('p') && /^Technical Note:/.exec(complex)){// tdchilds[i])) //Technical Note: //Technical Notes:
+                
+            }
+        }
+    }
+    else{
+        console.log('error');
+    }
+
+
+
+
+    /*
+    .each(function (rindex) {// every table has only one tr
         let trString = "";
         let nextTable = [];
         $(this).children('td').each(function (tdindex) {// every tr has 2 or 3 td
@@ -60,25 +116,26 @@ function ParaseTable(t, tableECCN) {
                 }
             });
         });
-
+ 
         for (let i = 0; i < deep; i++) {
             trString = '  ' + trString;
         }
-
+ 
         let currentECCN = "";
         tableECCN.forEach(element => {
             currentECCN = currentECCN + element;
         });
-
+ 
         console.log(currentECCN, trString);
-
+ 
         nextTable.forEach((element) => {
             ParaseTable(element, tableECCN);
         });
-
+ 
         tableECCN.pop();
     });
     deep--;
+    */
 }
 
 $('body > table').each(function (index) {
