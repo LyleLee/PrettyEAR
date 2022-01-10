@@ -27,14 +27,22 @@ let dataMap = [];
 
 function GetAllDeepECCN(tableECCN) {
     let allECCN = "";
-    tableECCN.each(function (index) {
-        allECCN += $(this);
-    });
+
+    for (let i = 0; i < tableECCN.length; ++i) {
+        allECCN = allECCN + '.' + tableECCN[i];
+    }
     return allECCN;
 }
 
-function ReplaceAndTrim(node) {
-    return $(node).text().replace(/(\r\n|\n|\r)/gm, "").trim();
+function ReplaceAndTrim(text) {
+    return text.replace(/(\r\n|\n|\r)/gm, "").trim();
+}
+
+function HasItalic(node) {
+    $(node).find('span').each(function (index) {
+        if ($(this).hasClass('oj-italic')) return true;
+    });
+    return false;
 }
 
 function ParaseTable(t, tableECCN) {
@@ -48,94 +56,55 @@ function ParaseTable(t, tableECCN) {
     let td = null; // table, text, p
 
     if (tds.length == 3) {
-        currentECCN = currentECCN + ReplaceAndTrim(tds[1]);
+        currentECCN = currentECCN + ReplaceAndTrim($(tds[1]).text());
         td = tds[2];
     }
     else {
-        currentECCN = currentECCN + treat_td(tds[0]);
+        currentECCN = currentECCN + ReplaceAndTrim($(tds[0]).text());
         td = tds[1];
     }
     let tdchilds = $(td).children();
 
     if (tdchilds.length == 1) // only text
     {
-        currentText = ReplaceAndTrim(td);
-        tableData.append([currentECCN, currentText]);
+        currentText = ReplaceAndTrim($(td).text());
+        console.log(currentECCN, '--', currentText);
     }
-    else if(tdchilds.length > 1){
-        // while not table
-        currentText = ReplaceAndTrim(tdchilds[0].text());
-        tableData.append([currentECCN,currentText]);
+    else if (tdchilds.length > 1) { // text,table,p.annotion
 
-        let complex = '';
+        currentText = ReplaceAndTrim($(tdchilds[0]).text());
+        console.log(currentECCN, '--', currentText);
+
+        let complexECCN = '';
+        let belongAnnotation = false;
         for (let i = 1; i < tdchilds.length; ++i) {
-            complex = ReplaceAndTrim(tdchilds[i]);
-            if(tdchilds[i].is('p') && /^Technical Note:/.exec(complex)){// tdchilds[i])) //Technical Note: //Technical Notes:
-                
+
+            if ($(tdchilds[i]).is('p') && $(tdchilds[i]).hasClass('oj-ti-annotation')) {//Technical Note: //Technical Notes:
+                complexECCN = currentECCN + ReplaceAndTrim($(tdchilds[i]).text());
+                currentText = ReplaceAndTrim($(tdchilds[i]).text());
+                belongAnnotation = true;
+                console.log(complexECCN, '--', currentText);
+                continue;
+            }
+            if ($(tdchilds[i]).is('table') && belongAnnotation == true && HasItalic(tdchilds[i]) == true) {
+                tableECCN.push(complexECCN)
+                ParaseTable($(tdchilds[i]), tableECCN);
+            }
+            if ($(tdchilds[i]).is('p') && belongAnnotation == true && HasItalic(tdchilds[i]) == true) {
+                currentText = $(tdchilds[i]).text();
+                console.log(complexECCN, '--', currentText);
+            }
+            if ($(tdchilds[i]).is('table') && belongAnnotation == false) {
+                tableECCN.push(currentECCN)
+                ParaseTable($(tdchilds[i]), tableECCN);
             }
         }
+
     }
-    else{
+    else {
         console.log('error');
     }
 
-
-
-
-    /*
-    .each(function (rindex) {// every table has only one tr
-        let trString = "";
-        let nextTable = [];
-        $(this).children('td').each(function (tdindex) {// every tr has 2 or 3 td
-            if (trString != "") {
-                //add one space before index
-                trString = trString + ' '
-            }
-            $(this).children().each(function (pindex) { // td has either lines of p or table
-                if ($(this).is('table') == true) {
-                    nextTable.push($(this));
-                } else {
-                    let thistdText = $(this).text().replace(/(\r\n|\n|\r)/gm, "").trim();// tdtext can be 3E002, a,b,c or a line of conetent text.
-                    let testResult = /^(\d[A-E]\d{3})|(EAR99)|^([a-z]\.)|^(\d\.)|(Note\s\d:)/.exec(thistdText);//match an index
-                    if (thistdText.length < 8 && testResult) { // deal with index, some long conetent text could begin with an index, that is why we set length limit 8
-                        if (/\d[A-E]\d{3}/.exec(thistdText)) {
-                            tableECCN.push(thistdText + '.'); //3E002.
-                        }
-                        else if (/Note\s\d:/.exec(thistdText)) {
-                            tableECCN.push(thistdText.split(':')[0] + '.'); //Note 1.
-                        }
-                        else {
-                            tableECCN.push(testResult[0]); // a. b. c.
-                        }
-                    }
-                    if (/^Technical Notes:/.exec(thistdText)) { // deal with line of content text
-                        trString = trString + '\n' + thistdText;
-                    } else {
-                        trString = trString + thistdText;
-                    }
-                }
-            });
-        });
- 
-        for (let i = 0; i < deep; i++) {
-            trString = '  ' + trString;
-        }
- 
-        let currentECCN = "";
-        tableECCN.forEach(element => {
-            currentECCN = currentECCN + element;
-        });
- 
-        console.log(currentECCN, trString);
- 
-        nextTable.forEach((element) => {
-            ParaseTable(element, tableECCN);
-        });
- 
-        tableECCN.pop();
-    });
-    deep--;
-    */
 }
 
 $('body > table').each(function (index) {
