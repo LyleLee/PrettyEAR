@@ -42,8 +42,15 @@ function ReplaceAndTrim(text) {
 }
 
 function HasItalic(node) {
+
+    //console.log($(node).html());
+    //if ($(node).hasClass('oj-italic')) return true;
     $(node).find('span').each(function(index) {
-        if ($(this).hasClass('oj-italic')) return true;
+        //console.log($(this).html());
+        if ($(this).hasClass('oj-italic')) {
+            console.log("has oj-italic");
+            return true;
+        }
     });
     return false;
 }
@@ -52,7 +59,8 @@ function ParaseTable(t, tableECCN) {
     deep++;
 
     let tableData = [];
-    let currentECCN = GetAllDeepECCN(tableECCN);
+    let longECCN = GetAllDeepECCN(tableECCN);
+    let miniECCN = '';
     let currentText = "";
     let tr = $(t).find('tbody').first().find('tr').first(); //every table has only 1 tr
     let tds = $(tr).children('td'); // every tr has 2 or 3 td
@@ -61,17 +69,19 @@ function ParaseTable(t, tableECCN) {
 
     if (tds.length == 3) { // it is a top level table, et: 3E002
         tdECCN = tds[1];
-        //currentECCN = currentECCN + '.' + ReplaceAndTrim($(tds[1]).text());
+        //longECCN = longECCN + '.' + ReplaceAndTrim($(tds[1]).text());
         td = tds[2];
     } else { // not top level table.
         tdECCN = tds[0];
         td = tds[1];
     }
 
-    if (currentECCN == '') {
-        currentECCN = ReplaceAndTrim($(tdECCN).text());
+    miniECCN = ReplaceAndTrim($(tdECCN).text()); // a or b or c ..
+
+    if (longECCN == '') { // 3E002
+        longECCN = miniECCN;
     } else {
-        currentECCN = currentECCN + '.' + ReplaceAndTrim($(tdECCN).text());
+        longECCN = longECCN + '.' + miniECCN // 3E002.a
     }
 
     let tdchilds = $(td).children();
@@ -79,39 +89,43 @@ function ParaseTable(t, tableECCN) {
     if (tdchilds.length == 1) // only text
     {
         currentText = ReplaceAndTrim($(td).text());
-        console.log(currentECCN, '--', currentText);
+        console.log(longECCN, '--', currentText);
     } else if (tdchilds.length > 1) { // text,table,p.annotion
 
         currentText = ReplaceAndTrim($(tdchilds[0]).text()); // a.A 'vector processor unit' designed to perform more than
-        console.log(currentECCN, '--', currentText);
+        console.log(longECCN, '--', currentText);
 
-        let complexECCN = '';
+        let techNote = '';
         let belongAnnotation = false;
         for (let i = 1; i < tdchilds.length; ++i) {
-
             if ($(tdchilds[i]).is('p') && $(tdchilds[i]).hasClass('oj-ti-annotation')) { //Technical Note: //Technical Notes:
-                complexECCN = currentECCN + ReplaceAndTrim($(tdchilds[i]).text());
-                currentText = ReplaceAndTrim($(tdchilds[i]).text());
+                techNote = ReplaceAndTrim($(tdchilds[i]).text());
+                currentText = techNote;
+                tableECCN.push(techNote) // //Technical Note: //Technical Notes:
+                longECCN = GetAllDeepECCN(tableECCN);
+                console.log(longECCN, '--', currentText);
                 belongAnnotation = true;
-                console.log(complexECCN, '--', currentText);
                 continue;
             }
-            if ($(tdchilds[i]).is('table') && belongAnnotation == true && HasItalic(tdchilds[i]) == true) {
-                tableECCN.push(complexECCN)
+            if ($(tdchilds[i]).is('table') && belongAnnotation == true && HasItalic(tdchilds[i])) {
+                console.log('hit note table');
                 ParaseTable($(tdchilds[i]), tableECCN);
-                tableECCN.pop();
                 continue;
             }
-            if ($(tdchilds[i]).is('p') && belongAnnotation == true && HasItalic(tdchilds[i]) == true) {
+            if ($(tdchilds[i]).is('p') && belongAnnotation == true && HasItalic(tdchilds[i])) {
+                console.log('hit note paragrah');
                 currentText = $(tdchilds[i]).text();
-                console.log(complexECCN, '--', currentText);
+                console.log(longECCN, '--', currentText);
                 continue;
             }
             if ($(tdchilds[i]).is('table') && belongAnnotation == false) {
-                tableECCN.push(currentECCN)
+                tableECCN.push(miniECCN)
                 ParaseTable($(tdchilds[i]), tableECCN);
                 tableECCN.pop();
             }
+        }
+        if (belongAnnotation == true) {
+            tableECCN.pop(); // pop techNote when loop end.
         }
 
     } else {
