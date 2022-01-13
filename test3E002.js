@@ -32,7 +32,7 @@ function GetAllDeepECCN(tableECCN) {
 
     allECCN = tableECCN[0];
     for (let i = 1; i < tableECCN.length; ++i) {
-        allECCN = allECCN + '.' + tableECCN[i];
+        allECCN += tableECCN[i];
     }
     return allECCN;
 }
@@ -43,15 +43,16 @@ function ReplaceAndTrim(text) {
 
 function HasItalic(node) {
 
-    //console.log($(node).html());
-    //if ($(node).hasClass('oj-italic')) return true;
-    $(node).find('span').each(function(index) {
-        //console.log($(this).html());
-        if ($(this).hasClass('oj-italic')) {
-            console.log("has oj-italic");
+    if ($(node).hasClass('oj-italic')) return true;
+
+    let span = $(node).find('span');
+
+    for (let i = 0; i < span.length; i++) {
+        if ($(span[i]).hasClass('oj-italic')) {
+            //console.log("has oj-italic");
             return true;
         }
-    });
+    }
     return false;
 }
 
@@ -59,7 +60,7 @@ function ParaseTable(t, tableECCN) {
     deep++;
 
     let tableData = [];
-    let longECCN = GetAllDeepECCN(tableECCN);
+    let longECCN = '';
     let miniECCN = '';
     let currentText = "";
     let tr = $(t).find('tbody').first().find('tr').first(); //every table has only 1 tr
@@ -78,11 +79,12 @@ function ParaseTable(t, tableECCN) {
 
     miniECCN = ReplaceAndTrim($(tdECCN).text()); // a or b or c ..
 
-    if (longECCN == '') { // 3E002
-        longECCN = miniECCN;
-    } else {
-        longECCN = longECCN + '.' + miniECCN // 3E002.a
+    if (miniECCN[miniECCN.length - 1] != '.') {
+        miniECCN += '.'
     }
+    tableECCN.push(miniECCN);
+
+    longECCN = GetAllDeepECCN(tableECCN);
 
     let tdchilds = $(td).children();
 
@@ -107,21 +109,17 @@ function ParaseTable(t, tableECCN) {
                 belongAnnotation = true;
                 continue;
             }
-            if ($(tdchilds[i]).is('table') && belongAnnotation == true && HasItalic(tdchilds[i])) {
-                console.log('hit note table');
+            if ($(tdchilds[i]).is('table') && belongAnnotation == true && HasItalic(tdchilds[i])) { //note table
                 ParaseTable($(tdchilds[i]), tableECCN);
                 continue;
             }
-            if ($(tdchilds[i]).is('p') && belongAnnotation == true && HasItalic(tdchilds[i])) {
-                console.log('hit note paragrah');
+            if ($(tdchilds[i]).is('p') && belongAnnotation == true && HasItalic(tdchilds[i])) { //note paragrah
                 currentText = $(tdchilds[i]).text();
                 console.log(longECCN, '--', currentText);
                 continue;
             }
             if ($(tdchilds[i]).is('table') && belongAnnotation == false) {
-                tableECCN.push(miniECCN)
                 ParaseTable($(tdchilds[i]), tableECCN);
-                tableECCN.pop();
             }
         }
         if (belongAnnotation == true) {
@@ -131,6 +129,7 @@ function ParaseTable(t, tableECCN) {
     } else {
         console.log('error');
     }
+    tableECCN.pop();
 
 }
 
