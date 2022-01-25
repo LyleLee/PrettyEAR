@@ -27,8 +27,6 @@ removeOldFile('.');
             if (eccn != null) {
                 //fs.unlinkSync(eccn[1]+'.txt');
                 let datar = TableTool($(this));
-
-                console.log('things in datamap');
                 console.log(datar);
             }
 
@@ -127,7 +125,7 @@ removeOldFile('.');
                             tableECCN.push(techNote) // //Technical Note: //Technical Notes:
                             longECCN = GetAllDeepECCN(tableECCN);
                             //console.log(longECCN, '--', currentText);
-                            dataMap.push([longECCN, currentText]);
+                            //dataMap.push([longECCN, currentText]);
                             belongAnnotation = true;
                             continue;
                         }
