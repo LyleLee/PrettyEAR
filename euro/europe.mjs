@@ -1,17 +1,17 @@
-const got = require('got');
-const cheerio = require('cheerio');
-const fs = require('fs');
-const tools = require('./tools.js')
+import got from 'got';
+import cheerio from 'cheerio';
+import fs from 'fs';
+import { removeOldFile } from './tools.mjs';
 
 
 console.log('clean old file');
 
-tools.removeOldFile('.');
+removeOldFile('.');
 
 (async() => {
     try {
         console.log('fetch url');
-        const response = await got('https://eur-lex.europa.eu/eli/reg/2021/821');
+        const response = await got('https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32021R0821&qid=1623378115307');
         //console.log(response.body);
         //=> '<!doctype html> ...'
         console.log(response.statusCode);
@@ -20,11 +20,26 @@ tools.removeOldFile('.');
 
         console.log('html loaded');
 
+        $('#L_2021206EN\\.01002501 > div > table').each(function(index) {
+            //#L_2021206EN\\.01002501 > div > table
+
+            let eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
+            if (eccn != null) {
+                //fs.unlinkSync(eccn[1]+'.txt');
+                let datar = TableTool($(this));
+
+                console.log('things in datamap');
+                console.log(datar);
+            }
+
+        });
+        console.log('html finish');
+
         function TableTool(table) {
 
             let deep = 0;
             let dataMap = [];
-            tableECCN = [];
+            let tableECCN = [];
 
             ParaseTable($(table), tableECCN);
 
@@ -96,11 +111,11 @@ tools.removeOldFile('.');
                 {
                     currentText = ReplaceAndTrim($(td).text());
                     dataMap.push([longECCN, currentText]);
-                    console.log(longECCN, '--', currentText);
+                    //console.log(longECCN, '--', currentText);
                 } else if (tdchilds.length > 1) { // text,table,p.annotion
 
                     currentText = ReplaceAndTrim($(tdchilds[0]).text()); // a.A 'vector processor unit' designed to perform more than
-                    console.log(longECCN, '--', currentText);
+                    //console.log(longECCN, '--', currentText);
                     dataMap.push([longECCN, currentText]);
 
                     let techNote = '';
@@ -111,7 +126,7 @@ tools.removeOldFile('.');
                             currentText = techNote;
                             tableECCN.push(techNote) // //Technical Note: //Technical Notes:
                             longECCN = GetAllDeepECCN(tableECCN);
-                            console.log(longECCN, '--', currentText);
+                            //console.log(longECCN, '--', currentText);
                             dataMap.push([longECCN, currentText]);
                             belongAnnotation = true;
                             continue;
@@ -122,7 +137,7 @@ tools.removeOldFile('.');
                         }
                         if ($(tdchilds[i]).is('p') && belongAnnotation == true && HasItalic(tdchilds[i])) { //note paragrah
                             currentText = $(tdchilds[i]).text();
-                            console.log(longECCN, '--', currentText);
+                            //console.log(longECCN, '--', currentText);
                             dataMap.push([longECCN, currentText]);
                             continue;
                         }
@@ -142,20 +157,6 @@ tools.removeOldFile('.');
 
             return dataMap;
         }
-
-
-        $('#L_2021206EN\\.01002501 > div > table').each(function(index) {
-
-            var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec($(this).text().replace(/(\r\n|\n|\r)/gm, "").trim());
-            if (eccn != null) {
-                //fs.unlinkSync(eccn[1]+'.txt');
-                let datar = TableTool($(this));
-
-                console.log('things in datamap');
-                console.log(datar);
-            }
-
-        });
 
 
     } catch (error) {

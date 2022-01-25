@@ -1,11 +1,10 @@
-const fs = require('fs')
+import { readdirSync, statSync, unlinkSync } from 'fs';
 
 
-const removeOldFile = function (dirPath) {
+const removeOldFile = function(dirPath) {
     try {
-        var files = fs.readdirSync(dirPath);
-    }
-    catch (e) {
+        var files = readdirSync(dirPath);
+    } catch (e) {
         console.log('errro when delete files');
         console.log(e)
         return;
@@ -15,15 +14,14 @@ const removeOldFile = function (dirPath) {
 
             var eccn = /^([0-9][A-E]\d{3})|(EAR99)\b/.exec(files[i]);
             var filePath = dirPath + '/' + files[i];
-            if (eccn != null && fs.statSync(filePath).isFile()) {
-                fs.unlinkSync(filePath);
-            }
-            else {
+            if (eccn != null && statSync(filePath).isFile()) {
+                unlinkSync(filePath);
+            } else {
                 console.log('not deleting', files[i]);
             }
         }
 }
 
-module.exports = {
+export {
     removeOldFile
-}
+};
